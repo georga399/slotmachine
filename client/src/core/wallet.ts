@@ -10,18 +10,18 @@ export const checkIfWalletConnected = async () => {
   const { solana } = window;
   return new Promise(async (resolve, reject) => {
     try {
-      // setLoading(true);
       if (solana && solana.isPhantom) {
         const response = await solana.connect({
           onlyIfTrusted: true,
         });
+        console.log("Connected to wallet:", response.publicKey.toString());
         resolve(response.publicKey.toString());
-        console.log("public key", response.publicKey.toString());
       } else {
+        console.log("Phantom wallet not found");
         resolve("");
       }
     } catch (err) {
-      console.log("errror");
+      console.error("Error checking wallet connection:", err);
       resolve("");
     }
   });
@@ -31,68 +31,76 @@ export const connectWallet = async () => {
   const { solana } = window;
   return new Promise(async (resolve, reject) => {
     try {
-      // setLoading(true);
-      if (solana) {
-        const response = await solana.connect(); //to disconnect use "solana.disconnect()"
+      if (solana && solana.isPhantom) {
+        const response = await solana.connect();
+        console.log("Wallet connected successfully:", response.publicKey.toString());
         resolve(response.publicKey.toString());
-        // setWalletAdresss(response.publicKey.toString());
-
-        // initUserAccount();
       } else {
-        alert("Please Install Solana's Phantom Wallet");
+        alert("Please install Phantom wallet from https://phantom.app/");
+        console.error("Phantom wallet not detected");
         resolve("");
       }
     } catch (err) {
+      console.error("Error connecting to wallet:", err);
+      alert("Failed to connect to Phantom wallet. Please try again.");
       resolve("");
-      console.log(err);
     }
   });
 };
 
 export const getBalance = async () => {
-  const provider = getProvider();
-  //@ts-ignore
-  const program = new Program(idl, programID, provider);
-  if (!provider.publicKey) {
-    return { balance: "", winBalance: "" };
+  try {
+    if (!window.solana || !window.solana.publicKey) {
+      return { balance: "", winBalance: "", vaultBalance: "" };
+    }
+
+    const provider = getProvider();
+    //@ts-ignore
+    const program = new Program(idl, programID, provider);
+
+    if (!provider.publicKey) {
+      return { balance: "", winBalance: "", vaultBalance: "" };
+    }
+
+    let vaultBalance = await provider.connection
+      .getBalance(new PublicKey("DNifDbg6Mj2NrFWP31cUDTHt5mdqBAz7EHMwmY8ZAs9j"))
+      .then(function (data) {
+        return lamportsToSol(data).toFixed(2);
+      })
+      .catch(function (error) {
+        console.error("Error fetching vault balance:", error);
+        return "";
+      });
+
+    let balance = await provider.connection
+      .getBalance(provider.publicKey)
+      .then(function (data) {
+        console.log("Wallet balance: " + lamportsToSol(data).toFixed(2));
+        return lamportsToSol(data).toFixed(2);
+      })
+      .catch(function (error) {
+        console.error("Error fetching wallet balance:", error);
+        return "";
+      });
+
+    const [userVault, ubump] = await PublicKey.findProgramAddressSync(
+      [Buffer.from("uvault"), provider.wallet.publicKey.toBuffer()],
+      program.programId
+    );
+    let winBalance = await provider.connection
+      .getBalance(userVault)
+      .then(function (data) {
+        console.log("Winning balance: " + lamportsToSol(data).toFixed(2));
+        return lamportsToSol(data).toFixed(2);
+      })
+      .catch(function (error) {
+        console.error("Error fetching winning balance:", error);
+        return "";
+      });
+
+    return { balance, winBalance, vaultBalance };
+  } catch (error) {
+    console.error("Error in getBalance:", error);
+    return { balance: "", winBalance: "", vaultBalance: "" };
   }
-
-
-  let vaultBalance = await provider.connection
-    .getBalance(new PublicKey("DNifDbg6Mj2NrFWP31cUDTHt5mdqBAz7EHMwmY8ZAs9j"))
-    .then(function (data) {
-      return lamportsToSol(data).toFixed(2);
-    })
-    .catch(function (error) {
-      console.log(error);
-      return "";
-    });
-
-  let balance = await provider.connection
-    .getBalance(provider.publicKey)
-    .then(function (data) {
-      console.log("Wallet balance: " + lamportsToSol(data).toFixed(2));
-      return lamportsToSol(data).toFixed(2);
-    })
-    .catch(function (error) {
-      console.log(error);
-      return "";
-    });
-
-  const [userVault, ubump] = await PublicKey.findProgramAddressSync(
-    [Buffer.from("uvault"), provider.wallet.publicKey.toBuffer()],
-    program.programId
-  );
-  let winBalance = await provider.connection
-    .getBalance(userVault)
-    .then(function (data) {
-      console.log("Winning balance : " + lamportsToSol(data).toFixed(2));
-      return lamportsToSol(data).toFixed(2);
-    })
-    .catch(function (error) {
-      console.log(error);
-      return "";
-    });
-
-  return { balance, winBalance, vaultBalance };
 };

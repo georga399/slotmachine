@@ -24,15 +24,38 @@ function App() {
   const [winBalance, setWinBalance] = useState("");
 
   useEffect(() => {
-    getBalance();
-    const onLoad = () => {
-      checkIfWalletConnected().then((res) => {
-        setWalletAdresss(res as string);
+    const onLoad = async () => {
+      const address = await checkIfWalletConnected();
+      if (address) {
+        setWalletAdresss(address as string);
         updateBalance();
-      });
+      }
     };
+
     window.addEventListener("load", onLoad);
-    return () => window.removeEventListener("load", onLoad);
+
+    // Handle account changes
+    if (window.solana) {
+      window.solana.on("accountChanged", (publicKey: any) => {
+        if (publicKey) {
+          console.log("Account changed to:", publicKey.toString());
+          setWalletAdresss(publicKey.toString());
+          updateBalance();
+        } else {
+          console.log("Account disconnected");
+          setWalletAdresss("");
+        }
+      });
+
+      window.solana.on("disconnect", () => {
+        console.log("Wallet disconnected");
+        setWalletAdresss("");
+      });
+    }
+
+    return () => {
+      window.removeEventListener("load", onLoad);
+    };
   }, []);
 
   const updateBalance = (onlyWallet = false) => {
