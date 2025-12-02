@@ -9,6 +9,7 @@ import {
   checkIfWalletConnected,
   connectWallet,
   getBalance,
+  waitForPhantom,
 } from "./core/wallet";
 import { ReactComponent as WalletSvg } from "./img/wallet.svg";
 
@@ -22,39 +23,68 @@ function App() {
   const [jackpot, setJackpot] = useState("");
   const [balance, setBalance] = useState("");
   const [winBalance, setWinBalance] = useState("");
+  const [isConnecting, setIsConnecting] = useState(false);
 
   useEffect(() => {
+    const checkPhantomAvailability = () => {
+      console.log("=== Phantom Detection ===");
+      console.log("window.solana:", window.solana);
+      console.log("window.solana?.isPhantom:", window.solana?.isPhantom);
+      console.log("========================");
+    };
+
     const onLoad = async () => {
+      console.log("Page loaded, checking for wallet connection...");
+      checkPhantomAvailability();
+
       const address = await checkIfWalletConnected();
       if (address) {
+        console.log("Wallet auto-connected with address:", address);
         setWalletAdresss(address as string);
         updateBalance();
+      } else {
+        console.log("No wallet auto-connected");
       }
     };
 
-    window.addEventListener("load", onLoad);
+    // Check immediately if page is already loaded
+    if (document.readyState === "complete") {
+      onLoad();
+    } else {
+      window.addEventListener("load", onLoad);
+    }
+
+    // Also check on a short delay in case Phantom loads after page
+    const phantomCheckTimeout = setTimeout(() => {
+      checkPhantomAvailability();
+    }, 1000);
 
     // Handle account changes
-    if (window.solana) {
-      window.solana.on("accountChanged", (publicKey: any) => {
-        if (publicKey) {
-          console.log("Account changed to:", publicKey.toString());
-          setWalletAdresss(publicKey.toString());
-          updateBalance();
-        } else {
-          console.log("Account disconnected");
-          setWalletAdresss("");
-        }
-      });
+    const setupWalletListeners = () => {
+      if (window.solana) {
+        window.solana.on("accountChanged", (publicKey: any) => {
+          if (publicKey) {
+            console.log("Account changed to:", publicKey.toString());
+            setWalletAdresss(publicKey.toString());
+            updateBalance();
+          } else {
+            console.log("Account disconnected");
+            setWalletAdresss("");
+          }
+        });
 
-      window.solana.on("disconnect", () => {
-        console.log("Wallet disconnected");
-        setWalletAdresss("");
-      });
-    }
+        window.solana.on("disconnect", () => {
+          console.log("Wallet disconnected");
+          setWalletAdresss("");
+        });
+      }
+    };
+
+    setupWalletListeners();
 
     return () => {
       window.removeEventListener("load", onLoad);
+      clearTimeout(phantomCheckTimeout);
     };
   }, []);
 
@@ -117,14 +147,25 @@ function App() {
         {!walletAddress && (
           <button
             className="button"
-            onClick={() => {
-              connectWallet().then((res) => {
-                setWalletAdresss(res as string);
-                updateBalance();
-              });
+            disabled={isConnecting}
+            onClick={async () => {
+              console.log("Connect button clicked");
+              setIsConnecting(true);
+              try {
+                const address = await connectWallet();
+                console.log("Received address:", address);
+                if (address) {
+                  setWalletAdresss(address);
+                  await updateBalance();
+                }
+              } catch (error) {
+                console.error("Error in button handler:", error);
+              } finally {
+                setIsConnecting(false);
+              }
             }}
           >
-            Connect Phantom Wallet
+            {isConnecting ? "Connecting..." : "Connect Phantom Wallet"}
           </button>
         )}
       </div>

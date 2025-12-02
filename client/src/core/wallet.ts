@@ -6,6 +6,29 @@ import { Program } from "@project-serum/anchor";
 
 const programID = new PublicKey(idl.metadata.address);
 
+// Wait for Phantom to be ready
+export const waitForPhantom = (): Promise<boolean> => {
+  return new Promise((resolve) => {
+    if (window.solana?.isPhantom) {
+      resolve(true);
+      return;
+    }
+
+    let attempts = 0;
+    const maxAttempts = 50; // 5 seconds
+    const interval = setInterval(() => {
+      attempts++;
+      if (window.solana?.isPhantom) {
+        clearInterval(interval);
+        resolve(true);
+      } else if (attempts >= maxAttempts) {
+        clearInterval(interval);
+        resolve(false);
+      }
+    }, 100);
+  });
+};
+
 export const checkIfWalletConnected = async () => {
   const { solana } = window;
   return new Promise(async (resolve, reject) => {
@@ -28,24 +51,40 @@ export const checkIfWalletConnected = async () => {
 };
 
 export const connectWallet = async () => {
-  const { solana } = window;
-  return new Promise(async (resolve, reject) => {
-    try {
-      if (solana && solana.isPhantom) {
-        const response = await solana.connect();
-        console.log("Wallet connected successfully:", response.publicKey.toString());
-        resolve(response.publicKey.toString());
-      } else {
-        alert("Please install Phantom wallet from https://phantom.app/");
-        console.error("Phantom wallet not detected");
-        resolve("");
-      }
-    } catch (err) {
-      console.error("Error connecting to wallet:", err);
-      alert("Failed to connect to Phantom wallet. Please try again.");
-      resolve("");
+  try {
+    console.log("Attempting to connect to Phantom wallet...");
+
+    // Wait for Phantom to be ready
+    const isPhantomReady = await waitForPhantom();
+
+    if (!isPhantomReady) {
+      console.error("Phantom wallet not detected after waiting");
+      alert("Phantom wallet is not installed or not loaded. Please install it from https://phantom.app/ and refresh the page.");
+      return "";
     }
-  });
+
+    console.log("Phantom wallet detected successfully");
+    console.log("window.solana:", window.solana);
+
+    console.log("Calling solana.connect()...");
+    const response = await window.solana!.connect();
+    console.log("Wallet connected successfully!");
+    console.log("Public key:", response.publicKey.toString());
+
+    return response.publicKey.toString();
+  } catch (err: any) {
+    console.error("Error connecting to wallet:", err);
+    console.error("Error details:", JSON.stringify(err, null, 2));
+
+    if (err.code === 4001) {
+      alert("Connection request was rejected. Please approve the connection in Phantom wallet.");
+    } else if (err.message?.includes("User rejected")) {
+      alert("Connection was rejected. Please try again and approve the connection.");
+    } else {
+      alert("Failed to connect to Phantom wallet: " + (err.message || "Unknown error"));
+    }
+    return "";
+  }
 };
 
 export const getBalance = async () => {
