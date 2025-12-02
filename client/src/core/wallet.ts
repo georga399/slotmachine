@@ -67,16 +67,28 @@ export const connectWallet = async () => {
     console.log("window.solana:", window.solana);
 
     console.log("Calling solana.connect()...");
-    const response = await window.solana!.connect();
-    console.log("Wallet connected successfully!");
+    console.log("⚠️ Please check if Phantom popup window appeared!");
+    console.log("⚠️ If you don't see popup, check your browser's popup blocker");
+
+    // Add timeout to connection attempt
+    const connectPromise = window.solana!.connect();
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Connection timeout - popup may be blocked or not visible")), 60000)
+    );
+
+    const response = await Promise.race([connectPromise, timeoutPromise]) as { publicKey: { toString(): string } };
+
+    console.log("✅ Wallet connected successfully!");
     console.log("Public key:", response.publicKey.toString());
 
     return response.publicKey.toString();
   } catch (err: any) {
-    console.error("Error connecting to wallet:", err);
+    console.error("❌ Error connecting to wallet:", err);
     console.error("Error details:", JSON.stringify(err, null, 2));
 
-    if (err.code === 4001) {
+    if (err.message?.includes("timeout")) {
+      alert("Connection timeout! Please check:\n1. Is Phantom popup window visible?\n2. Is popup blocker enabled?\n3. Check Phantom extension icon in browser toolbar");
+    } else if (err.code === 4001) {
       alert("Connection request was rejected. Please approve the connection in Phantom wallet.");
     } else if (err.message?.includes("User rejected")) {
       alert("Connection was rejected. Please try again and approve the connection.");

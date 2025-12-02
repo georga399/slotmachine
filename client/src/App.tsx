@@ -145,28 +145,35 @@ function App() {
           </div>
         )}
         {!walletAddress && (
-          <button
-            className="button"
-            disabled={isConnecting}
-            onClick={async () => {
-              console.log("Connect button clicked");
-              setIsConnecting(true);
-              try {
-                const address = await connectWallet();
-                console.log("Received address:", address);
-                if (address) {
-                  setWalletAdresss(address);
-                  await updateBalance();
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <button
+              className="button"
+              disabled={isConnecting}
+              onClick={async () => {
+                console.log("Connect button clicked");
+                setIsConnecting(true);
+                try {
+                  const address = await connectWallet();
+                  console.log("Received address:", address);
+                  if (address) {
+                    setWalletAdresss(address);
+                    await updateBalance();
+                  }
+                } catch (error) {
+                  console.error("Error in button handler:", error);
+                } finally {
+                  setIsConnecting(false);
                 }
-              } catch (error) {
-                console.error("Error in button handler:", error);
-              } finally {
-                setIsConnecting(false);
-              }
-            }}
-          >
-            {isConnecting ? "Connecting..." : "Connect Phantom Wallet"}
-          </button>
+              }}
+            >
+              {isConnecting ? "Connecting..." : "Connect Phantom Wallet"}
+            </button>
+            {isConnecting && (
+              <span style={{ color: '#fff', fontSize: '12px' }}>
+                Check for Phantom popup window...
+              </span>
+            )}
+          </div>
         )}
       </div>
       <div className="cluster">devnet</div>
