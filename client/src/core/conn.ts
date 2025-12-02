@@ -10,14 +10,10 @@ const opts = {
 };
 
 export const getProvider = () => {
-  if (!window.solana) {
-    throw new Error("Phantom wallet not found. Please install Phantom wallet.");
-  }
-
   const connection = new Connection(network, opts.preflightCommitment as any);
   const provider = new AnchorProvider(
     connection,
-    window.solana as any,
+    window.solana,
     opts.preflightCommitment as any
   );
   return provider;
