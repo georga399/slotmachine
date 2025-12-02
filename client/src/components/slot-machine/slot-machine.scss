@@ -1,0 +1,159 @@
+$bg: #333;
+$push-color: hsla(10, 90%, 40%, 1);
+
+$push-size: 180px;
+
+.slot-machine {
+  display: flex;
+  width: 500px;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+
+  .message {
+    text-shadow: 0 0 1px #ffee67, 0 0 13px #ffed63;
+    font-size: 26px;
+    height: 30px;
+    color: #fff;
+    font-weight: bold;
+    margin-top: 10px;
+    text-align: center;
+  }
+
+  .jackpot {
+    text-shadow: 0 0 1px #ffee67, 0 0 13px #ffed63;
+    font-size: 26px;
+    height: 30px;
+    color: #fff;
+    font-weight: bold;
+    margin-top: 10px;
+    text-align: center;
+    position: absolute;
+    top: 72px;
+    margin-left: -15px;
+  }
+
+  .utils {
+    display: flex;
+    justify-content: space-evenly;
+    flex: 1 1;
+    width: 284px;
+    /* margin-top: 16px; */
+    flex-direction: column;
+    /* background-color: #333333; */
+    top: 490px;
+    position: absolute;
+    margin-left: -10px;
+  }
+
+  .collect-container {
+    position: absolute;
+    top: 408px;
+    width: 282px;
+    display: flex;
+    height: 39px;
+    margin-left: -13px;
+    background: linear-gradient(145deg, #8B0000, #B22222);
+    border: 2px solid #FFD700;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow:
+      2px 2px 0 #000,
+      3px 3px 0 rgba(0, 0, 0, 0.5);
+  }
+
+  .winning {
+    height: 100%;
+    font-family: 'Times New Roman', serif;
+    font-size: 1.2rem;
+    font-weight: 900;
+    color: #FFD700;
+    text-shadow:
+      1px 1px 0 #000,
+      2px 2px 0 rgba(0, 0, 0, 0.7);
+    width: 150px;
+    text-align: center;
+    line-height: 39px;
+    background: linear-gradient(145deg, #8B0000, #B22222);
+    border-right: 1px solid rgba(255, 215, 0, 0.3);
+  }
+
+  .collect-button {
+    font-family: 'Arial Black', sans-serif;
+    font-size: 1rem;
+    font-weight: 900;
+    width: 132px;
+    text-align: center;
+    line-height: 39px;
+    color: #FFD700;
+    text-shadow:
+      1px 1px 0 #000,
+      2px 2px 0 rgba(0, 0, 0, 0.7);
+    cursor: pointer;
+    background: linear-gradient(145deg, #B22222, #8B0000);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: linear-gradient(145deg, #8B0000, #B22222);
+      color: #fff;
+      text-shadow:
+        0 0 5px #FFD700,
+        0 0 10px #FFD700,
+        0 0 15px #FFD700,
+        0 0 20px #ff3333,
+        0 0 35px #ff3333,
+        0 0 40px #ff3333;
+      box-shadow:
+        0 0 10px rgba(255, 0, 0, 0.5),
+        inset 0 0 10px rgba(255, 215, 0, 0.2);
+    }
+
+    &:active {
+      transform: translateY(1px);
+    }
+  }
+
+  .screen-container {
+    background-size: contain;
+    background-repeat: no-repeat;
+    width: 277px;
+    height: 200px;
+    position: absolute;
+    z-index: -1;
+    margin-top: 168px;
+    margin-left: -21px;
+  }
+
+  .lever-position {
+    position: absolute;
+    right: 0;
+    top: 134px;
+  }
+
+  .buttons-container {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    button.spin {
+    }
+
+    .results-container {
+      padding-top: 40px;
+      display: flex;
+      cursor: pointer;
+      button {
+        margin: 0 6px;
+        padding: 6px;
+        font-size: 16px;
+        font-weight: bold;
+        background-color: rgb(63, 63, 100);
+        color: #fff;
+      }
+    }
+  }
+}
