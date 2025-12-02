@@ -1,0 +1,61 @@
+.lever-container {
+  position: relative;
+  width: 60px;
+  height: 200px;
+  margin-left: 40px;
+
+  .bulb {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+    position: absolute;
+    top: 0;
+    left: 10px;
+    box-shadow: 0 0 20px rgba(255, 68, 68, 0.6);
+  }
+
+  .arm {
+    width: 20px;
+    height: 140px;
+    background: linear-gradient(to right, #666 0%, #333 100%);
+    border-radius: 10px;
+    position: absolute;
+    top: 35px;
+    left: 20px;
+    cursor: pointer;
+    transition: transform 0.1s;
+
+    &:hover {
+      transform: scale(1.05);
+    }
+
+    &::after {
+      content: "";
+      width: 50px;
+      height: 30px;
+      background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+      border-radius: 15px;
+      position: absolute;
+      bottom: -15px;
+      left: -15px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+  }
+
+  &.pulled .arm {
+    animation: pull 0.6s ease-in-out;
+  }
+}
+
+@keyframes pull {
+  0% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(60px) rotate(5deg);
+  }
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+}

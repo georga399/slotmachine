@@ -1,0 +1,11 @@
+.slot-screen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border: 8px solid #333;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5);
+  margin-bottom: 30px;
+}
